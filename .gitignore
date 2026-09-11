@@ -1,0 +1,15 @@
+# Temp scratch space — not versioned
+temp/**/*
+!temp/**/README.md
+
+# OS/editor junk
+.DS_Store
+.vscode/
+Thumbs.db
+
+# Large raw data dumps if any get added later
+*.csv
+*.xlsx
+
+# graphify-axet
+.graphify/
