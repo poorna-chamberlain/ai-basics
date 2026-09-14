@@ -44,6 +44,18 @@ Cumulative insights, discoveries, and patterns learned across sessions.
 
 ---
 
+## Session 3: First Real Model Comparison Results (2026-09-14)
+
+### What Happened
+- User actually built both `MODEL_TEST_PROMPTS.md` projects with both models (`projects/claude/` and `projects/chatgpt/`, each with "project 1" and "project_2" subfolders) and reported real, first-hand results — logged directly in `MODEL_TEST_PROMPTS.md`'s log tables.
+- **Project 1 (Electron desktop app)**: Claude Opus 5 won clearly on quality ("did best work, its really best"), but user is uneasy about Opus's cost for routine use. GPT-5.6 Sol was cheap/fast but the output quality was poor ("too bad, that's never a good work") — a clean case of cheap-but-broken losing to expensive-but-working.
+- **Project 2 (UI component showcase)**: Result flipped — GPT-5.6 Sol produced the best UI, in just a few minutes ("best ui"). Claude's Project 2 output wasn't explicitly scored against GPT by the user.
+- **Real-world confirmation**: this is a genuine, first-hand data point for the "route by task, not brand loyalty" principle already documented in `notes/completed/07` and `QUESTIONS_ANSWERED.md` Q2 — Claude won the systems-integration/app task, GPT won the pure-UI task. Neither model is universally better; the earlier research-based conclusion held up under an actual test.
+- **Open follow-up the user raised**: does Claude Sonnet 5 (cheaper than Opus) do well enough on Project 1 to avoid needing Opus for this class of task? Not yet tested — worth a 3-way run (Opus vs Sonnet vs GPT-5.6 Sol) next time.
+- **Repo hygiene fix**: the built projects came with `node_modules/` (600M+ each), `out/`, `release/` build dirs, and several redundant multi-GB zip backups (`release.zip`, `project 1_with release.zip`, `project 1_node_modules_included.zip`) plus one unrelated/sensitive file (`payslip.zip`) sitting loose in `projects/chatgpt/`. Root `.gitignore` updated to exclude all node/electron build artifacts and all `*.zip` files repo-wide (defense-in-depth on top of each project's own nested `.gitignore`). Flagged the zips (especially `payslip.zip`) to the user rather than silently deleting them.
+
+---
+
 ## Model Comparison Notes
 
 ### GPT-4 (OpenAI)

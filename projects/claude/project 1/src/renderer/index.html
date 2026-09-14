@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>QuickImage</title>
+    <!--
+      ONNX Runtime (which powers background removal) instantiates its emscripten
+      glue by evaluating it as a string, so it needs both 'wasm-unsafe-eval' and
+      'unsafe-eval'; without the latter removal fails with an EvalError. The
+      renderer only ever executes code from our own bundle over app://, and
+      remote content is never loaded as a page, so the exposure is contained.
+      connect-src covers the model download and the search APIs; img-src allows
+      remote thumbnails straight from providers.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self' app:;
+        script-src 'self' app: 'wasm-unsafe-eval' 'unsafe-eval' blob:;
+        worker-src 'self' app: blob:;
+        child-src 'self' app: blob:;
+        style-src 'self' app: 'unsafe-inline';
+        font-src 'self' app: data:;
+        img-src 'self' app: data: blob: https:;
+        connect-src 'self' app: data: blob: https:;
+        object-src 'none';
+        base-uri 'none';
+        form-action 'none';
+      "
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

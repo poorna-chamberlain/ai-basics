@@ -1,0 +1,39 @@
+{
+  "name": "quickimage",
+  "version": "1.0.0",
+  "description": "A launcher-style desktop app for finding, editing and copying images without leaving your keyboard.",
+  "main": "./out/main/index.js",
+  "author": "QuickImage",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "typecheck:node": "tsc -p tsconfig.node.json --noEmit",
+    "typecheck:web": "tsc -p tsconfig.web.json --noEmit",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "build": "npm run typecheck && electron-vite build",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:win": "npm run build && electron-builder --win",
+    "build:all": "npm run build && electron-builder --mac --win",
+    "icons": "node scripts/generate-icons.mjs",
+    "bundle:script": "esbuild --bundle --platform=node --format=cjs --external:electron --alias:@shared=./src/shared",
+    "selftest": "electron-vite build && npm run bundle:script -- scripts/selftest.ts --outfile=out/main/selftest.cjs && electron out/main/selftest.cjs",
+    "test:editor": "electron-vite build && npm run bundle:script -- scripts/test-editor.ts --outfile=out/main/test-editor.cjs && electron out/main/test-editor.cjs",
+    "capture": "electron-vite build && npm run bundle:script -- scripts/capture.ts --outfile=out/main/capture.cjs && electron out/main/capture.cjs"
+  },
+  "devDependencies": {
+    "@imgly/background-removal": "^1.7.0",
+    "@types/node": "^26.5.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.6"
+  }
+}

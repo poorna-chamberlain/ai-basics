@@ -13,3 +13,21 @@ Thumbs.db
 
 # graphify-axet
 .graphify/
+
+# Node/Electron build & dependency artifacts (defense-in-depth — the
+# projects/claude/project 1 and projects/chatgpt/project 1 folders each also
+# have their own .gitignore covering node_modules/out/release/dist, but this
+# root rule catches any future project folder that doesn't have one yet)
+node_modules/
+dist/
+out/
+release/
+build/
+*.tsbuildinfo
+
+# Never commit zip archives — in this repo they're all either duplicate
+# backups of a node_modules/release folder that's already excluded above
+# (e.g. projects/chatgpt/project 1/release.zip, project 1_with release.zip,
+# project 1_node_modules_included.zip) or unrelated personal files that
+# shouldn't be in a shared repo (e.g. projects/chatgpt/payslip.zip).
+*.zip

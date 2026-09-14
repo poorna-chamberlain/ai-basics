@@ -8,6 +8,8 @@
 3. Record tokens, time, and your quality judgment in the log table under each project.
 4. Read the "For You Only" section under each project *before* you run it — it's analysis for you (feasibility, complexity, expected cost) and is explicitly **not** part of what you paste into the models.
 
+**Lesson learned from Project 1 (applies to every project from Project 2 onward)**: Project 1 named a specific external dependency (Openverse) for the model to use, and it turned out unreliable for at least one model, forcing manual intervention that broke the 1:1 comparison. Going forward, prompts will restrict **outcome and quality bar** (what it must do, how good it must look/feel, which dated patterns are forbidden) but will **not** mandate a specific external service/library/provider when reliability is uncertain — the model should be free to pick its own working implementation for anything like that. Where a prompt *does* pin something (e.g., "single self-contained file, no external dependencies"), that's a reliability/fairness choice in the other direction — removing an external-failure risk entirely, not adding one.
+
 ---
 
 ## Project 1: Global-Hotkey Image Search + Background Remover (Desktop App)
@@ -56,8 +58,12 @@ Once the app is fully built and working, create a file named `design.md` in the 
 
 | Model | Input tokens | Output tokens | Total tokens | Time to complete | Actually runs? (Y/N) | Hotkey works? | Background removal works? | Clipboard copy works? | Visual quality (1-5) | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Claude Opus 5 | | | | | | | | | | |
-| GPT-5.6 Sol | | | | | | | | | | |
+| Claude Opus 5 | | | | | Y | | | | 5 (your words: "did best work, its really best") | Best output of the two, genuinely good. Your concern: cost. You don't want to reach for Opus this often at this price — open question below. |
+| GPT-5.6 Sol | | | | | N (per your feedback) | | | | 2 (your words: "too bad, that's never a good work") | Cheapest/fastest, but the output quality itself was poor for this specific task — cost-effective doesn't help if the app doesn't actually work. |
+
+**Your verdict (logged 2026-09-14)**: Claude Opus 5 wins on quality by a clear margin for this app-building task, but you're uneasy about Opus's cost for routine use. GPT-5.6 Sol was cheap but the result "was never a good work" — cheap + broken isn't a win.
+
+**Open follow-up you raised**: *Can Claude Sonnet 5 do Project 1 well enough to replace Opus here, at lower cost?* Worth running Project 1 through Sonnet 5 next as a 3-way check (Opus vs Sonnet vs GPT-5.6 Sol) before concluding Opus is "required" for this class of task — flag this to me whenever you're ready to run it and I'll extend the log table to a third row.
 
 ### For You Only — Not Part of the Prompt (feasibility, complexity, cost estimate)
 
@@ -80,3 +86,95 @@ Once the app is fully built and working, create a file named `design.md` in the 
 | GPT-5.6 Sol ($5/$30 per M, approx.) | ~750-950 | ~8,000-12,000 | ~$0.25-0.37 |
 
 Treat these as rough order-of-magnitude estimates, not guarantees — actual numbers depend heavily on how much of the app each model tries to write in one shot vs. how much it summarizes/truncates. If you run this through an **agentic coding tool** (Cursor/Claude Code/Codex CLI) instead of a single chat message — which is realistically how you'd actually want to build this, since it needs to create a real multi-file project, install dependencies, and iterate — expect total cost to be several times higher than the single-pass estimate above (context gets re-sent every turn, and you'll likely go through multiple fix-it rounds for the permission/packaging issues mentioned above). A realistic full build-to-working-app budget through an agent is more likely **$1-4 total**, not the single-pass number above, and Claude's tokenizer/verbosity gap will compound turn-over-turn exactly as described in `QUESTIONS_ANSWERED.md` Q9.
+
+---
+
+## Project 2: Full Interactive UI Component Showcase (Dashboard-Style Single Page)
+
+**Before you run this**, two things worth knowing (not questions that block you — I made a call on both, tell me if you want it different next time):
+1. I pinned "single self-contained HTML file, vanilla JS/CSS only, no frameworks, no external libraries, no CDN links, no network calls at all." This is deliberately the *opposite* kind of constraint from the Openverse issue: instead of naming an external dependency that might fail, this removes every external dependency entirely, so there is zero chance either model's output breaks because of something outside its own code. It also means you can compare results instantly — just open both `.html` files in two browser tabs, no npm install, no build step. It does mean charts must be hand-built with SVG/Canvas rather than a charting library, which is intentional — that's a harder, more revealing test of raw capability, exactly what you said you want to see.
+2. Your "all available HTML components" ask is open-ended enough that one model could build 6 solid components and the other could build 20 shallow ones, which wouldn't be a fair comparison either. So I turned it into a specific, identical checklist below — same reasoning as pinning tech stack in Project 1 for fairness, just applied to scope instead of tooling.
+
+```
+Build a single, self-contained HTML file (inline CSS and vanilla JavaScript only — no frameworks, no external libraries, no CDN links, no build tools, no network requests of any kind). It must open and fully work by double-clicking the file in a browser, with zero setup. All data shown must be realistic mock/sample data you invent and hardcode into the file.
+
+The page has a top-level tab bar (visually similar in concept to a search engine's result-type tabs — e.g. "Overview / Data Table / Analytics / Components") that switches which section of the page is visible, without a full page reload. Each section must retain its own internal state (filters, sort order, selected timeframe, expanded rows, scroll position, etc.) when the user switches to another tab and back — switching tabs must never reset anything.
+
+SECTION 1: DATA TABLE
+Build one interactive data table (invent a realistic dataset — e.g. a company's yearly revenue/metrics by category — with at least 10 rows and at least 4 columns) with all of the following working, not just visually present:
+- Click a column header to sort ascending/descending by that column.
+- Each row can expand to reveal nested detail sub-rows (e.g. a breakdown of that row), collapsible on demand, plus an "expand all / collapse all" control.
+- A footer row showing the sum of every numeric column, which recalculates correctly after sorting, filtering, or reordering columns.
+- A control to reorder/swap the columns (e.g. move-left/move-right buttons or drag handles on the header cells).
+- The first data column holds a raw base value (e.g. revenue for that row). Add at least one additional column that is a computed "Growth %" column, calculated from that base value column (e.g. period-over-period change). This computed column must keep tracking the correct base column even after columns are reordered — it should never silently start computing against the wrong column just because its visual position changed.
+- A live search/filter input above the table that filters visible rows as the user types, with the footer totals and any expanded state still behaving correctly against the filtered set.
+- Pagination (or a "load more") if useful for the dataset size you chose.
+
+SECTION 2: ANALYTICS / CHARTS
+Build every chart below from scratch using raw SVG or Canvas (no charting library, no CDN):
+- A timeframe tab selector above the charts with at least "1Y / 3Y / 5Y" options, controlling the date range shown across every chart in this section at once, with a smooth transition when switching.
+- A line chart.
+- A line chart where 1-2 of the plotted lines have a soft area/gradient "shadow" fill beneath them down to the axis.
+- A bar chart.
+- A combo chart in the same canvas/SVG that renders bars for one series and an overlaid line for a second series together.
+- Every chart must have: hover tooltips showing the exact value/date under the cursor, a legend that can toggle individual series on/off, and a smooth animated transition when the timeframe or underlying data changes.
+
+SECTION 3: COMPONENTS
+Build every one of these, fully functional (not just styled placeholders), using one consistent visual language across all of them:
+- Text input, number input, textarea, and a password input with a show/hide toggle
+- A custom-styled dropdown/select (not the plain native browser one) supporting keyboard navigation (arrow keys + Enter) and type-to-filter
+- A multi-select tag/chip input (type to add a tag, click to remove one)
+- A carousel/slider with next/prev arrows, clickable dot indicators, drag/swipe support, and autoplay that pauses on hover
+- A checkbox group and a radio button group
+- A toggle/switch control
+- A modal/dialog that opens on demand, traps focus while open, and closes on Escape, backdrop click, or its own close button
+- A toast/notification that appears after a triggering action and auto-dismisses after a few seconds
+- An accordion (FAQ-style, expand/collapse sections)
+- A tooltip that appears on hover/focus for at least one element
+- A dual-handle range slider (e.g. a min/max price filter)
+- A standalone pagination control (page numbers + prev/next)
+- A progress bar and a loading-skeleton state, both demonstrated with a real trigger (e.g. a button that simulates a load)
+- A breadcrumb trail
+- A row of buttons demonstrating every state explicitly: default, hover, focus-visible (keyboard), active/pressed, disabled, and a loading state with a spinner
+
+DESIGN & QUALITY RULES (read carefully — these apply across the entire page, every section, every component)
+- You choose the entire visual language yourself: colors, typography, spacing scale, border-radius, shadows, iconography. Nothing is prescribed for you. But whatever you choose must be applied with total consistency everywhere — one coherent design system used identically across the table, charts, and every component, not different ad-hoc styling per section.
+- Do not default to any of these three dated, over-used AI-generated patterns: (1) a warm cream/off-white background (#F4F1EA-ish) with a serif display font and a terracotta/orange accent, (2) a plain near-black dark background with a neon or acid-green accent, or (3) a dense newspaper/editorial layout with thin hairline rules everywhere. This is a 2026 product-grade dashboard — the bar is the polish level of a modern analytics product (think Linear, Stripe Dashboard, or Vercel's dashboard as reference points for craft, not for their specific colors), not a 2015 admin template or a bare Bootstrap page.
+- Include a working light/dark mode toggle, with both modes fully and deliberately designed (not just an inverted CSS filter) — every color, border, and shadow should be intentionally chosen for each mode.
+- Every interactive element, in every section, must have a visible hover state, a visible keyboard focus state, an active/pressed state, and a disabled state where disabling makes sense — this is a functional requirement, not optional polish.
+- Every animation and transition should feel smooth and intentional, never an abrupt snap — this applies to tab switching, row expand/collapse, chart updates, modal open/close, toast entry/exit, and carousel movement alike.
+- The entire page must be fully responsive and genuinely usable from a 360px-wide mobile viewport up to a 1920px desktop viewport — the table, the charts, and every component must restructure sensibly at small widths, not just shrink until it breaks.
+- Everything must be genuinely accessible: correct semantic HTML elements, labels on every form control, full keyboard operability (correct tab order; Enter/Space/Escape/arrow keys behaving the way a user would expect for each component type), and visible focus indicators throughout — do not rely on mouse-only interaction anywhere.
+
+Once the page is fully built and working, create a file named `design.md` in the project root (max 200 lines) documenting the exact design tokens you used for both light and dark mode: background/surface colors, text colors, accent/semantic colors (success/warning/error if used), border colors, the full spacing scale, border-radius scale, typography (font family/sizes/weights/line-heights), shadow values, and animation durations/easing curves — written precisely enough that the same visual system could be reproduced exactly in a separate future session without seeing this code.
+```
+
+### Log Table (fill in after running)
+
+| Model | Input tokens | Output tokens | Total tokens | Time to complete | Opens & runs with zero setup? | # of Section 3 components fully working | Column-reorder keeps Growth% correct? | Visual quality (1-5) | Consistency across sections (1-5) | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Claude Opus 5 | | | | | | | | | | Not explicitly rated by you against GPT for this project — your feedback singled out GPT's UI as the standout result here. Fill in your own score if you want a direct side-by-side. |
+| GPT-5.6 Sol | | | | | few minutes | | | 5 (your words: "best ui") | | Fastest turnaround ("just few mins") AND best visual result of the two, by your own review — a clean win for GPT-5.6 Sol on this specific UI-heavy task, opposite of the Project 1 result. |
+
+**Your verdict (logged 2026-09-14)**: GPT-5.6 Sol produced the best UI, fast. This flips the Project 1 outcome — worth noting as a real data point that **task type**, not brand loyalty, decided the winner here: Claude won the "build a real working desktop app with system integration" task, GPT won the "build a polished, comprehensive UI" task. That's a direct, first-hand confirmation of the "route by task, not brand loyalty" principle from `notes/completed/07.real-world-user-experiences.md` and `QUESTIONS_ANSWERED.md` Q2 — not a contradiction of Claude's general strength, just evidence it isn't universal either.
+
+### For You Only — Not Part of the Prompt (feasibility, complexity, cost estimate)
+
+**Is this possible in one file?** Yes, technically — everything asked for (sortable/expandable tables, hand-built SVG charts, carousels, modals, custom dropdowns) is standard vanilla-JS territory with no exotic browser APIs required. The honest risk isn't "can it be done," it's **length**: this is a large amount of distinct functionality (table + 4 chart types + ~15 components) crammed into one file with a real design system applied consistently, which is a lot to generate correctly in a single response.
+
+**What to actually watch for when you compare them**: because this is a big single-shot ask, expect one or both models to do one of three things, and it's worth noting *which* each one does, since it's itself a meaningful capability signal:
+1. Genuinely deliver everything, complete and working, in one response.
+2. Deliver most of it well but visibly cut corners on 2-4 of the Section 3 components (e.g., a tooltip that's just a CSS `title` attribute instead of a real component) to fit.
+3. Explicitly say it's continuing in a follow-up message/response due to length, and need a "continue" prompt from you.
+Don't automatically penalize option 3 as worse than option 2 — a model that's honest about needing more room and then actually delivers a fully correct rest is arguably better engineering judgment than one that silently under-builds several components to appear "done" in one shot. Judge on what's actually correct and complete at the end, not on whether it fit in exactly one message.
+
+**The most interesting single test in here**: the Growth % column staying correctly bound to its base column after a column reorder. This is a small detail buried in a big prompt, but it's a real state-management/data-binding correctness test that's easy to get subtly wrong (e.g., hardcoding "column index 1" instead of tracking the actual data field) — worth checking by hand in both outputs rather than trusting it visually looks fine.
+
+**Estimated tokens/cost, Claude Opus 5 vs GPT-5.6 Sol**: This is the largest single-file ask in this project set so far — expect a long response regardless of model:
+
+| | Input tokens | Output tokens | Approx. cost (single pass, if it fits) |
+|---|---|---|---|
+| Claude Opus 5 ($5/$25 per M) | ~1,100-1,400 | ~18,000-28,000+ (may hit practical response-length limits given everything asked for) | ~$0.46-0.71+ |
+| GPT-5.6 Sol ($5/$30 per M, approx.) | ~850-1,050 | ~12,000-20,000 | ~$0.36-0.60 |
+
+These are rougher estimates than Project 1's, precisely because of the length risk noted above — if either model splits its answer across 2-3 continuation turns, multiply the output-token cost accordingly (each continuation re-sends the prior output as input context too, so a 3-turn completion costs meaningfully more than 3x a single clean turn, not exactly 3x). Given Claude's tokenizer counts the same code as roughly 1.5-1.7x more tokens than GPT's (see `QUESTIONS_ANSWERED.md` Q9), and this prompt is almost entirely code, expect that gap to show up clearly in your logged numbers here.
